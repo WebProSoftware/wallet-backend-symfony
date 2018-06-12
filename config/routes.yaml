@@ -1,0 +1,17 @@
+index:
+    path: /
+    controller: App\Controller\DefaultController::index
+
+userAuth:
+    path: /api/authenticate
+    controller: App\Controller\Api\UserController::authenticate
+    methods: [POST]
+
+userCreate:
+    path: /api/user/register
+    controller: App\Controller\Api\UserController::create
+    methods: [POST]
+
+userRead:
+    path: /api/user
+    controller: App\Controller\Api\UserController::read

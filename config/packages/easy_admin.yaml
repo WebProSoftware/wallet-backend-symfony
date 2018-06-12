@@ -1,0 +1,11 @@
+easy_admin:
+    entities:
+        # List the entity class name you want to manage
+        - App\Entity\User
+        - App\Entity\UserRole
+        - App\Entity\UserDetails
+        - App\Entity\UserAddress
+        - App\Entity\Money
+        - App\Entity\MoneyDetails
+        - App\Entity\MoneyType
+        - App\Entity\MoneyCategory
