@@ -2,12 +2,12 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use ApiPlatform\Core\Annotation\ApiResource;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
- * @ApiResource()
  */
 class User
 {
@@ -59,14 +59,29 @@ class User
     private $last_access;
 
     /**
-     * @ORM\Column(type="json_array")
-     */
-    private $role;
-
-    /**
      * @ORM\Column(type="string", length=255)
      */
     private $token;
+
+    /**
+     * @ORM\ManyToMany(targetEntity="App\Entity\UserRole", mappedBy="user")
+     */
+    private $userRoles;
+
+    /**
+     * @ORM\OneToOne(targetEntity="App\Entity\UserAddress", cascade={"persist", "remove"})
+     */
+    private $UserAdress;
+
+    /**
+     * @ORM\OneToOne(targetEntity="App\Entity\UserDetails", cascade={"persist", "remove"})
+     */
+    private $UserDetails;
+
+    public function __construct()
+    {
+        $this->userRoles = new ArrayCollection();
+    }
 
     public function getId()
     {
@@ -169,22 +184,6 @@ class User
         return $this;
     }
 
-    public function getRole()
-    {
-        return $this->role;
-    }
-
-    public function setRole($role): self
-    {
-        $this->role = $role;
-
-        return $this;
-    }
-
-    public function __toString() {
-        return $this->email;
-    }
-
     public function getToken(): ?string
     {
         return $this->token;
@@ -195,5 +194,61 @@ class User
         $this->token = $token;
 
         return $this;
+    }
+
+    /**
+     * @return Collection|UserRole[]
+     */
+    public function getUserRoles(): Collection
+    {
+        return $this->userRoles;
+    }
+
+    public function addUserRole(UserRole $userRole): self
+    {
+        if (!$this->userRoles->contains($userRole)) {
+            $this->userRoles[] = $userRole;
+            $userRole->addUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUserRole(UserRole $userRole): self
+    {
+        if ($this->userRoles->contains($userRole)) {
+            $this->userRoles->removeElement($userRole);
+            $userRole->removeUser($this);
+        }
+
+        return $this;
+    }
+
+    public function getUserAdress(): ?UserAddress
+    {
+        return $this->UserAdress;
+    }
+
+    public function setUserAdress(?UserAddress $UserAdress): self
+    {
+        $this->UserAdress = $UserAdress;
+
+        return $this;
+    }
+
+    public function getUserDetails(): ?UserDetails
+    {
+        return $this->UserDetails;
+    }
+
+    public function setUserDetails(?UserDetails $UserDetails): self
+    {
+        $this->UserDetails = $UserDetails;
+
+        return $this;
+    }
+
+    public function __toString() {
+        return $this->email;
     }
 }

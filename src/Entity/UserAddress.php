@@ -36,11 +36,6 @@ class UserAddress
      */
     private $number_local;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="userDetails")
-     * @ORM\JoinColumn(nullable=true)
-     */
-    private $user;
 
     public function getId()
     {
@@ -95,13 +90,5 @@ class UserAddress
         return $this;
     }
 
-    public function getUser()
-    {
-        return $this->user;
-    }
 
-    public function setUser(User $user)
-    {
-        $this->user = $user;
-    }
 }

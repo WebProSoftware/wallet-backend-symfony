@@ -5,13 +5,14 @@ index:
 userAuth:
     path: /api/authenticate
     controller: App\Controller\Api\UserController::authenticate
-    methods: [POST]
+    methods: [OPTIONS, POST]
 
 userCreate:
     path: /api/user/register
     controller: App\Controller\Api\UserController::create
-    methods: [POST]
+    methods: [OPTIONS, POST]
 
 userRead:
     path: /api/user
     controller: App\Controller\Api\UserController::read
+    methods: [OPTIONS, POST, GET]

@@ -3,19 +3,17 @@
 namespace App\Controller\Api;
 
 use App\Entity\User;
+use App\Entity\UserRole;
 use App\Repository\UserRepository;
-use JMS\Serializer\Serializer;
-use JMS\Serializer\SerializerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Normalizer\GetSetMethodNormalizer;
-use Symfony\Component\Validator\Constraints\Date;
-use Symfony\Component\Validator\Constraints\DateTime;
 
+use Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer;
+use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Serializer\Encoder\XmlEncoder;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 
 class UserController extends Controller
 {
@@ -80,6 +78,12 @@ class UserController extends Controller
 
             $response = new Response();
             $repositoryUser = $this->getDoctrine()->getRepository(User::class);
+            $repositoryRole = $this->getDoctrine()->getRepository(UserRole::class);
+
+            $role = $repositoryRole->findOneBy(['name' => "ROLE_USER"]);
+            if(!$role) {
+                exit('Role error');
+            }
 
             $data = $request->get('data');
             $email = $data['email'];
@@ -93,7 +97,7 @@ class UserController extends Controller
                 $model->setCreatedAt($now);
                 $model->setUpdatedAt($now);
                 $model->setEmail($email);
-                $model->setRole(json_encode([ "role_id" => 1 ]));
+                $model->addUserRole($role);
                 $model->setSalt(md5($now->getTimestamp()));
                 $model->setPassword(md5($pass . $model->getSalt()));
                 $model->setToken(sha1($model->getPassword()));
@@ -127,10 +131,20 @@ class UserController extends Controller
         $token = str_replace("Bearer ","",$auth);
 
         $response = new Response();
-
         $user = $repositoryUser->findOneBy(['token' => $token]);
         if($user) {
-            $result = $this->get("serializer")->serialize($user, 'json');
+
+            $encoders = array(new XmlEncoder(), new JsonEncoder());
+            $normalizer = new ObjectNormalizer();
+            $normalizer->setCircularReferenceLimit(2);
+            // Add Circular reference handler
+            $normalizer->setCircularReferenceHandler(function ($object) {
+                return $object->getId();
+            });
+            $normalizers = array($normalizer);
+            $serializer = new Serializer($normalizers, $encoders);
+            $result = $serializer->serialize($user, 'json');
+
             $response->setContent($result);
             $response->headers->set('Content-Type', 'application/json');
         }
