@@ -32,6 +32,10 @@ class UserController extends Controller
 
             $response = new Response();
             if($user && ($user->getPassword() == md5($pass . $user->getSalt()) )) {
+                $user->setLastAccess(new \DateTime());
+
+                $this->getDoctrine()->getManager()->persist($user);
+                $this->getDoctrine()->getManager()->flush();
 
                 if($user->getBlocked()) {
                     $response->setContent(json_encode([
@@ -122,10 +126,16 @@ class UserController extends Controller
         $auth = $request->headers->get('authorization');
         $token = str_replace("Bearer ","",$auth);
 
+        $response = new Response();
+
         $user = $repositoryUser->findOneBy(['token' => $token]);
         if($user) {
-
+            $result = $this->get("serializer")->serialize($user, 'json');
+            $response->setContent($result);
+            $response->headers->set('Content-Type', 'application/json');
         }
+
+        return $response;
     }
 
     public function update(Request $request) {
