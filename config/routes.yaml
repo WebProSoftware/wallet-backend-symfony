@@ -16,3 +16,7 @@ userRead:
     path: /api/user
     controller: App\Controller\Api\UserController::read
     methods: [OPTIONS, POST, GET]
+userUpdate:
+    path: /api/user/{id}
+    controller: App\Controller\Api\UserController::update
+    methods: [PUT]

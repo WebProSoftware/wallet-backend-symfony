@@ -3,6 +3,8 @@
 namespace App\Controller\Api;
 
 use App\Entity\User;
+use App\Entity\UserAddress;
+use App\Entity\UserDetails;
 use App\Entity\UserRole;
 use App\Repository\UserRepository;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,6 +16,7 @@ use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Validator\Constraints\DateTime;
 
 class UserController extends Controller
 {
@@ -137,6 +140,13 @@ class UserController extends Controller
             $encoders = array(new XmlEncoder(), new JsonEncoder());
             $normalizer = new ObjectNormalizer();
             $normalizer->setCircularReferenceLimit(2);
+            $normalizer->setIgnoredAttributes([
+                'password',
+                'salt',
+                'token',
+                'active',
+                'blocked'
+            ]);
             // Add Circular reference handler
             $normalizer->setCircularReferenceHandler(function ($object) {
                 return $object->getId();
@@ -152,11 +162,86 @@ class UserController extends Controller
         return $response;
     }
 
-    public function update(Request $request) {
+    public function update(Request $request , $id) {
+        $em = $this->getDoctrine()->getManager();
+        $repositoryUser = $this->getDoctrine()->getRepository(User::class);
 
+        $userForm = $request->get('data');
+        $error = false;
+        $result = [];
+
+
+        $response = new Response();
+        $user = $repositoryUser->findOneBy(['id' => $id]);
+        $validEmail = $repositoryUser->findOneBy(['email' => $userForm['email']]);
+        
+
+        if($validEmail) {
+            if( ($validEmail->getId() != $user->getId()) ) {
+                $error = true;
+                $result = [
+                    'status' => "fail",
+                    'msg' => "W bazie danych istnieje juz taki email",
+                ];
+            }
+        }
+
+        if($user && !$error) {
+
+            if($user->getUserDetails()) $userDetails = $user->getUserDetails();
+            else $userDetails = new UserDetails();
+
+            $userDetails->setFirstName($userForm['firstName']);
+            $userDetails->setLastName($userForm['lastName']);
+
+            if($user->getUserAdress()) $userAddress = $user->getUserAdress();
+            else $userAddress = new UserAddress();
+
+            $userAddress->setCity($userForm['city']);
+            $userAddress->setStreet($userForm['street']);
+            $userAddress->setNumberLocal($userForm['numberLocal']);
+            $userAddress->setPostCode($userForm['postCode']);
+
+            $user->setEmail($userForm['email']);
+            $user->setUpdatedAt(new \DateTime());
+            $user->setUserAdress($userAddress);
+            $user->setUserDetails($userDetails);
+
+            $em->persist($user);
+            $em->flush();
+
+            $result = [
+                "status" => "success",
+                "msg" => "Zapisano zmiany."
+            ];
+
+        }
+        $response->setContent(json_encode($result));
+        $response->headers->set('Content-Type', 'application/json');
+        return $response;
     }
 
-    public function delete(Request $request) {
+    public function delete(Request $request, $id) {
+        $em = $this->getDoctrine()->getManager();
+        $repositoryUser = $this->getDoctrine()->getRepository(User::class);
 
+        $response = new Response();
+        $result = [];
+
+        $user = $repositoryUser->findOneBy(['id' => $id]);
+        if($user) {
+            $user->setActive(false);
+            $em->persist($user);
+            $em->flush();
+
+            $result = [
+                "status" => "success",
+                "msg" => "usniety",
+            ];
+        }
+
+        $response->setContent(json_encode($result));
+        $response->headers->set('Content-Type', 'application/json');
+        return $response;
     }
 }
