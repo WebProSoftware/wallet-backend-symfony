@@ -78,9 +78,16 @@ class User
      */
     private $UserDetails;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Money", mappedBy="user")
+     */
+    private $monies;
+
+
     public function __construct()
     {
         $this->userRoles = new ArrayCollection();
+        $this->monies = new ArrayCollection();
     }
 
     public function getId()
@@ -250,5 +257,36 @@ class User
 
     public function __toString() {
         return $this->email;
+    }
+
+    /**
+     * @return Collection|Money[]
+     */
+    public function getMonies(): Collection
+    {
+        return $this->monies;
+    }
+
+    public function addMoney(Money $money): self
+    {
+        if (!$this->monies->contains($money)) {
+            $this->monies[] = $money;
+            $money->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMoney(Money $money): self
+    {
+        if ($this->monies->contains($money)) {
+            $this->monies->removeElement($money);
+            // set the owning side to null (unless already changed)
+            if ($money->getUser() === $this) {
+                $money->setUser(null);
+            }
+        }
+
+        return $this;
     }
 }

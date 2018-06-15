@@ -31,11 +31,6 @@ class MoneyDetails
      */
     private $amount_item;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Money", inversedBy="money")
-     * @ORM\JoinColumn(nullable=true)
-     */
-    private $money;
 
     public function getId()
     {
@@ -78,15 +73,10 @@ class MoneyDetails
         return $this;
     }
 
-    public function getMoney()
+    public function __toString()
     {
-        return $this->money;
+        return $this->getTitle();
     }
 
-    public function setMoney(Money $money)
-    {
-        $this->money = $money;
 
-        return $this;
-    }
 }

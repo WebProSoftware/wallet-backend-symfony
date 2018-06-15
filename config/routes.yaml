@@ -2,16 +2,19 @@ index:
     path: /
     controller: App\Controller\DefaultController::index
 
+#user controller
 userAuth:
     path: /api/authenticate
     controller: App\Controller\Api\UserController::authenticate
     methods: [OPTIONS, POST]
-
+userStore:
+    path: /api/users
+    controller: App\Controller\Api\UserController::store
+    methods: [GET]
 userCreate:
     path: /api/user/register
     controller: App\Controller\Api\UserController::create
     methods: [OPTIONS, POST]
-
 userRead:
     path: /api/user
     controller: App\Controller\Api\UserController::read
@@ -20,3 +23,24 @@ userUpdate:
     path: /api/user/{id}
     controller: App\Controller\Api\UserController::update
     methods: [PUT]
+#end user controller
+moneyStore:
+    path: /api/money
+    controller: App\Controller\Api\MoneyController::store
+    methods: [GET]
+moneyCreate:
+    path: /api/money
+    controller: App\Controller\Api\MoneyController::create
+    methods: [POST]
+moneyDelete:
+    path: /api/money/{id}
+    controller: App\Controller\Api\MoneyController::delete
+    methods: [DELETE]
+moneyStatStore:
+    path: /api/money/stat
+    controller: App\Controller\Api\MoneyController::moneyStat
+    methods: [GET]
+moneyCategories:
+    path: /api/categories
+    controller: App\Controller\Api\MoneyController::categories
+    methods: [GET]

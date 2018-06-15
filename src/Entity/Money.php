@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -32,16 +34,20 @@ class Money
     private $amount_total;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\MoneyType", inversedBy="moneyType")
-     * @ORM\JoinColumn(nullable=true)
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="monies")
      */
-    private $money_type;
+    private $User;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\MoneyCategory", inversedBy="moneyCategory")
-     * @ORM\JoinColumn(nullable=true)
+     * @ORM\OneToOne(targetEntity="App\Entity\MoneyDetails", cascade={"persist", "remove"})
+     */
+    private $moneyDetails;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\MoneyCategory", inversedBy="monies")
      */
     private $money_category;
+
 
     public function getId()
     {
@@ -84,32 +90,46 @@ class Money
         return $this;
     }
 
-    public function getMoneyType()
-    {
-        return $this->money_type;
-    }
-
-    public function setMoneyType(MoneyType $moneyType)
-    {
-        $this->money_type = $moneyType;
-
-        return $this;
-    }
-
-    public function getMoneyCategory()
-    {
-        return $this->money_category;
-    }
-
-    public function setMoneyCategory(MoneyCategory $moneyCategory)
-    {
-        $this->money_category = $moneyCategory;
-
-        return $this;
-    }
-
     public function __toString()
     {
         return (string) $this->id;
     }
+
+    public function getUser(): ?User
+    {
+        return $this->User;
+    }
+
+    public function setUser(?User $User): self
+    {
+        $this->User = $User;
+
+        return $this;
+    }
+
+    public function getMoneyDetails(): ?MoneyDetails
+    {
+        return $this->moneyDetails;
+    }
+
+    public function setMoneyDetails(?MoneyDetails $moneyDetails): self
+    {
+        $this->moneyDetails = $moneyDetails;
+
+        return $this;
+    }
+
+    public function getMoneyCategory(): ?MoneyCategory
+    {
+        return $this->money_category;
+    }
+
+    public function setMoneyCategory(?MoneyCategory $money_category): self
+    {
+        $this->money_category = $money_category;
+
+        return $this;
+    }
+
+
 }

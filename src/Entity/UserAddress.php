@@ -90,5 +90,10 @@ class UserAddress
         return $this;
     }
 
+    public function __toString()
+    {
+        return $this->getStreet() . " " . $this->getNumberLocal();
+    }
+
 
 }

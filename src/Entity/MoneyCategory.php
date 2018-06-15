@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -36,6 +38,17 @@ class MoneyCategory
      * @ORM\JoinColumn(nullable=true)
      */
     private $money_type;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Money", mappedBy="money_category")
+     */
+    private $monies;
+
+    public function __construct()
+    {
+        $this->monies = new ArrayCollection();
+    }
+
 
     public function getId()
     {
@@ -93,6 +106,30 @@ class MoneyCategory
     public function __toString()
     {
         return $this->name;
+    }
+
+
+    public function addMoney(Money $money): self
+    {
+        if (!$this->monies->contains($money)) {
+            $this->monies[] = $money;
+            $money->setMoneyCategory($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMoney(Money $money): self
+    {
+        if ($this->monies->contains($money)) {
+            $this->monies->removeElement($money);
+            // set the owning side to null (unless already changed)
+            if ($money->getMoneyCategory() === $this) {
+                $money->setMoneyCategory(null);
+            }
+        }
+
+        return $this;
     }
 
 }

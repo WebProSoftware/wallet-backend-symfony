@@ -49,6 +49,7 @@ class UserController extends Controller
                         'id' => $user->getId(),
                         'email' => $user->getEmail(),
                         'token' => $user->getToken(),
+                        'level' => $user->getUserRoles()->count(),
                         'status'=> 'success',
                     ]));
                 }
@@ -125,6 +126,49 @@ class UserController extends Controller
             return $response;
         }
     }
+
+    public function store(Request $request) {
+        $repositoryUser = $this->getDoctrine()->getRepository(User::class);
+
+        $response = new Response();
+        $auth = $request->headers->get('authorization');
+        $token = str_replace("Bearer ","",$auth);
+
+        if(!$repositoryUser->findOneBy(['token' => $token])) {
+            $response->setContent(json_encode([
+                'status' => 'fail',
+                'msg' => "Brak autoryzacji"
+            ]));
+        }
+        $users = $repositoryUser->findAll();
+
+        if($users) {
+            $encoders = array(new XmlEncoder(), new JsonEncoder());
+            $normalizer = new ObjectNormalizer();
+            $normalizer->setCircularReferenceLimit(2);
+            $normalizer->setIgnoredAttributes([
+                'password',
+                'salt',
+                'token',
+                'active',
+                'monies',
+                'lastAccess',
+                'updatedAt',
+                'userRoles',
+                'UserAdress',
+                'UserDetails'
+            ]);
+            // Add Circular reference handler
+            $normalizer->setCircularReferenceHandler(function ($object) {
+                return $object->getId();
+            });
+            $normalizers = array($normalizer);
+            $serializer = new Serializer($normalizers, $encoders);
+            $result = $serializer->serialize($users, 'json');
+        }
+        $response->setContent($result);
+        return $response;
+    }
     
     public function read(Request $request) {
         $em = $this->getDoctrine()->getManager();
@@ -145,7 +189,8 @@ class UserController extends Controller
                 'salt',
                 'token',
                 'active',
-                'blocked'
+                'blocked',
+                'monies'
             ]);
             // Add Circular reference handler
             $normalizer->setCircularReferenceHandler(function ($object) {
@@ -170,7 +215,6 @@ class UserController extends Controller
         $error = false;
         $result = [];
 
-
         $response = new Response();
         $user = $repositoryUser->findOneBy(['id' => $id]);
         $validEmail = $repositoryUser->findOneBy(['email' => $userForm['email']]);
@@ -191,16 +235,16 @@ class UserController extends Controller
             if($user->getUserDetails()) $userDetails = $user->getUserDetails();
             else $userDetails = new UserDetails();
 
-            $userDetails->setFirstName($userForm['firstName']);
-            $userDetails->setLastName($userForm['lastName']);
+            $userDetails->setFirstName(isset($userForm['firstName']) ? $userForm['firstName'] : "");
+            $userDetails->setLastName(isset($userForm['lastName']) ? $userForm['lastName'] : "");
 
             if($user->getUserAdress()) $userAddress = $user->getUserAdress();
             else $userAddress = new UserAddress();
 
-            $userAddress->setCity($userForm['city']);
-            $userAddress->setStreet($userForm['street']);
-            $userAddress->setNumberLocal($userForm['numberLocal']);
-            $userAddress->setPostCode($userForm['postCode']);
+            $userAddress->setCity(isset($userForm['city']) ? $userForm['city'] : "");
+            $userAddress->setStreet(isset($userForm['street']) ? $userForm['street'] : "");
+            $userAddress->setNumberLocal(isset($userForm['numberLocal']) ? $userForm['numberLocal'] : "");
+            $userAddress->setPostCode(isset($userForm['postCode']) ? $userForm['postCode'] : "");
 
             $user->setEmail($userForm['email']);
             $user->setUpdatedAt(new \DateTime());
