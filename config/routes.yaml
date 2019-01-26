@@ -40,6 +40,10 @@ moneyStatStore:
     path: /api/money/stat
     controller: App\Controller\Api\MoneyController::moneyStat
     methods: [GET]
+moneyTypes:
+    path: /api/money/types
+    controller: App\Controller\Api\MoneyController::types
+    methods: [GET]
 moneyCategories:
     path: /api/categories
     controller: App\Controller\Api\MoneyController::categories

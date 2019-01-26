@@ -26,7 +26,7 @@ class MoneyCategory
     protected $description;
 
     /**
-     * @MongoDb\Field(type="float")
+     * @MongoDb\Field(type="boolean")
      */
     protected $distance;
 
@@ -36,9 +36,11 @@ class MoneyCategory
     protected $money_type;
 
     /**
-     * @MongoDb\ReferenceMany(targetDocument="Money", mappedBy="money_category")
+     * @MongoDb\ReferenceMany(targetDocument="Money")
      */
     protected $monies;
+
+
 
     /**
      * @return mixed

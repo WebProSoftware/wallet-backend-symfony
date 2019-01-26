@@ -28,7 +28,7 @@ class Money {
     protected $amount_total;
 
     /**
-     * @MongoDB\ReferenceMany(targetDocument="User", inversedBy="monies")
+     * @MongoDB\ReferenceOne(targetDocument="User", inversedBy="monies")
      */
     protected $User;
 
@@ -38,9 +38,10 @@ class Money {
     protected $moneyDetails;
 
     /**
-     * @MongoDB\ReferenceMany(targetDocument="MoneyCategory", mappedBy="monies")
+     * @MongoDB\ReferenceOne(targetDocument="MoneyCategory")
      */
     protected $money_category;
+
 
     /**
      * @return mixed
@@ -136,6 +137,7 @@ class Money {
     public function setMoneyDetails($moneyDetails)
     {
         $this->moneyDetails = $moneyDetails;
+
     }
 
     /**

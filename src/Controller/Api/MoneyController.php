@@ -22,8 +22,8 @@ class MoneyController extends Controller {
      * @return Response
      */
     public function store(Request $request) {
-        $repositoryUser = $this->getDoctrine()->getRepository(User::class);
-        $repositoryMoney = $this->getDoctrine()->getRepository(Money::class);
+        $repositoryUser = $this->get('doctrine_mongodb')->getRepository(User::class);
+        $repositoryMoney = $this->get('doctrine_mongodb')->getRepository(Money::class);
 
         $auth = $request->headers->get('authorization');
         $token = str_replace("Bearer ","",$auth);
@@ -79,9 +79,9 @@ class MoneyController extends Controller {
     }
 
     public function create(Request $request) {
-        $em = $this->getDoctrine()->getManager();
-        $repositoryUser = $this->getDoctrine()->getRepository(User::class);
-        $repositoryMoneyCategory = $this->getDoctrine()->getRepository(MoneyCategory::class);
+        $em = $this->get('doctrine_mongodb')->getManager();
+        $repositoryUser = $this->get('doctrine_mongodb')->getRepository(User::class);
+        $repositoryMoneyCategory = $this->get('doctrine_mongodb')->getRepository(MoneyCategory::class);
 
         $response = new Response();
         $auth = $request->headers->get('authorization');
@@ -96,6 +96,9 @@ class MoneyController extends Controller {
             ]));
             return $response;
         }
+
+
+
         $moneyForm = $request->get('data');
 
         $modelMoneyCategory = $repositoryMoneyCategory->findOneBy(['id' => $moneyForm['category']]);
@@ -129,6 +132,7 @@ class MoneyController extends Controller {
         $modelMoney->setMoneyCategory($modelMoneyCategory);
         $modelMoney->setUser($user);
 
+
         $em->persist($modelMoney);
         $em->flush();
 
@@ -141,8 +145,8 @@ class MoneyController extends Controller {
     }
 
     public function delete($id) {
-        $em = $this->getDoctrine()->getManager();
-        $repositoryMoney = $this->getDoctrine()->getRepository(Money::class);
+        $em = $this->get('doctrine_mongodb')->getManager();
+        $repositoryMoney = $this->get('doctrine_mongodb')->getRepository(Money::class);
 
         $response = new Response();
         $response->headers->set('Content-Type', 'application/json');
@@ -165,8 +169,8 @@ class MoneyController extends Controller {
      * @return Response
      */
     public function categories() {
-        $em = $this->getDoctrine()->getManager();
-        $repositoryMoneyCategory = $this->getDoctrine()->getRepository(MoneyCategory::class);
+        $em = $this->get('doctrine_mongodb')->getManager();
+        $repositoryMoneyCategory = $this->get('doctrine_mongodb')->getRepository(MoneyCategory::class);
 
         $response = new Response();
         $response->headers->set('Content-Type', 'application/json');
@@ -246,5 +250,25 @@ class MoneyController extends Controller {
         return $response;
 
     }
+
+    public function types(Request $request) {
+        $repositoryTypes = $this->get('doctrine_mongodb')->getRepository(MoneyType::class);
+        $response = new Response();
+        $response->headers->set('Content-Type', 'application/json');
+        $encoders = array(new XmlEncoder(), new JsonEncoder());
+        $normalizer = new ObjectNormalizer();
+        $normalizer->setCircularReferenceLimit(2);
+
+        // Add Circular reference handler
+        $normalizer->setCircularReferenceHandler(function ($object) {
+            return $object->getId();
+        });
+        $normalizers = array($normalizer);
+        $serializer = new Serializer($normalizers, $encoders);
+        $result = $serializer->serialize($repositoryTypes->findAll(), 'json');
+        $response->setContent($result);
+        return $response;
+    }
+
 
 }

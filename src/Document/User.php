@@ -61,17 +61,17 @@ class User {
     /**
      * @MongoDB\ReferenceOne(targetDocument="UserAddress", cascade={"persist", "remove"})
      */
-    private $UserAdress;
+    protected $UserAdress;
 
     /**
      * @MongoDB\ReferenceOne(targetDocument="UserDetails", cascade={"persist", "remove"})
      */
-    private $UserDetails;
+    protected $UserDetails;
 
     /**
      * @MongoDB\ReferenceMany(targetDocument="Money", mappedBy="user")
      */
-    private $monies = array();
+    protected $monies = [];
 
     /**
      * @return mixed
@@ -273,12 +273,28 @@ class User {
         return $this->monies;
     }
 
-    /**
-     * @param mixed $monies
-     */
-    public function setMonies($monies)
+
+    public function addMoney(Money $money): self
     {
-        $this->monies = $monies;
+        if (!$this->monies->contains($money)) {
+            $this->monies[] = $money;
+            $money->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMoney(Money $money): self
+    {
+        if ($this->monies->contains($money)) {
+            $this->monies->removeElement($money);
+            // set the owning side to null (unless already changed)
+            if ($money->getUser() === $this) {
+                $money->setUser(null);
+            }
+        }
+
+        return $this;
     }
 
     public function __construct()
