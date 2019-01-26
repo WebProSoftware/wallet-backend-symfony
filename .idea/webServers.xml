@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="e6749ba3-49a7-43cb-ba2f-01faa1df3931" name="webps" url="http://ssh.dhosting.pl">
+        <fileTransfer host="ssh.dhosting.pl" port="22" rootFolder="/home/klient.dhosting.pl/webpsadmin/api.myWallet.webps.pl" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

@@ -22,7 +22,7 @@ class MoneyCategoryRepository extends ServiceEntityRepository
 //    /**
 //     * @return MoneyCategory[] Returns an array of MoneyCategory objects
 //     */
-    /*
+
     public function findByExampleField($value)
     {
         return $this->createQueryBuilder('m')
@@ -34,7 +34,7 @@ class MoneyCategoryRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
-    */
+
 
     /*
     public function findOneBySomeField($value): ?MoneyCategory
