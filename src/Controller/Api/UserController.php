@@ -2,11 +2,9 @@
 
 namespace App\Controller\Api;
 
-use App\Entity\User;
-use App\Entity\UserAddress;
-use App\Entity\UserDetails;
-use App\Entity\UserRole;
-use App\Repository\UserRepository;
+use App\Document\User;
+use App\Document\UserAddress;
+use App\Document\UserDetails;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -29,14 +27,18 @@ class UserController extends Controller
             $email = $request->get('username');
             $pass = $request->get('password');
 
-            $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['email' => $email]);
+            $repositoryUser = $this->get('doctrine_mongodb')->getRepository(User::class);
+            $user = $repositoryUser->findOneBy(['email' => $email]);
 
             $response = new Response();
-            if($user && ($user->getPassword() == md5($pass . $user->getSalt()) )) {
-                $user->setLastAccess(new \DateTime());
 
-                $this->getDoctrine()->getManager()->persist($user);
-                $this->getDoctrine()->getManager()->flush();
+            if($user && ($user->getPassword() == md5($pass) )) {
+                $user->setLastAccess(new \DateTime());
+                
+
+                $this->get('doctrine_mongodb')->getManager()->persist($user);
+                $this->get('doctrine_mongodb')->getManager()->flush();
+                
 
                 if($user->getBlocked()) {
                     $response->setContent(json_encode([
@@ -49,8 +51,8 @@ class UserController extends Controller
                         'id' => $user->getId(),
                         'email' => $user->getEmail(),
                         'token' => $user->getToken(),
-                        'level' => $user->getUserRoles()->count(),
                         'status'=> 'success',
+                        'level' => 2
                     ]));
                 }
                 else {
@@ -78,18 +80,14 @@ class UserController extends Controller
      */
     public function create(Request $request) {
         if($request->getMethod()  == "POST" ) {
-            $em = $this->getDoctrine()->getManager();
+            $dm = $this->get('doctrine_mongodb')->getManager();
 
             $response = new Response();
-            $repositoryUser = $this->getDoctrine()->getRepository(User::class);
-            $repositoryRole = $this->getDoctrine()->getRepository(UserRole::class);
+            $repositoryUser = $this->get('doctrine_mongodb')->getRepository(User::class);
 
-            $role = $repositoryRole->findOneBy(['name' => "ROLE_USER"]);
-            if(!$role) {
-                exit('Role error');
-            }
 
             $data = $request->get('data');
+
             $email = $data['email'];
             $pass = $data['password'];
 
@@ -101,13 +99,12 @@ class UserController extends Controller
                 $model->setCreatedAt($now);
                 $model->setUpdatedAt($now);
                 $model->setEmail($email);
-                $model->addUserRole($role);
                 $model->setSalt(md5($now->getTimestamp()));
-                $model->setPassword(md5($pass . $model->getSalt()));
+                $model->setPassword(md5($pass));
                 $model->setToken(sha1($model->getPassword()));
 
-                $em->persist($model);
-                $em->flush();
+                $dm->persist($model);
+                $dm->flush();
 
                 $result = [
                     "status" => "success",
@@ -128,7 +125,7 @@ class UserController extends Controller
     }
 
     public function store(Request $request) {
-        $repositoryUser = $this->getDoctrine()->getRepository(User::class);
+        $repositoryUser = $this->get('doctrine_mongodb')->getRepository(User::class);
 
         $response = new Response();
         $auth = $request->headers->get('authorization');
@@ -171,8 +168,8 @@ class UserController extends Controller
     }
     
     public function read(Request $request) {
-        $em = $this->getDoctrine()->getManager();
-        $repositoryUser = $this->getDoctrine()->getRepository(User::class);
+        $em = $this->get('doctrine_mongodb')->getManager();
+        $repositoryUser = $this->get('doctrine_mongodb')->getRepository(User::class);
 
         $auth = $request->headers->get('authorization');
         $token = str_replace("Bearer ","",$auth);
@@ -208,8 +205,8 @@ class UserController extends Controller
     }
 
     public function update(Request $request , $id) {
-        $em = $this->getDoctrine()->getManager();
-        $repositoryUser = $this->getDoctrine()->getRepository(User::class);
+        $em = $this->get('doctrine_mongodb')->getManager();
+        $repositoryUser = $this->get('doctrine_mongodb')->getRepository(User::class);
 
         $userForm = $request->get('data');
         $error = false;

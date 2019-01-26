@@ -2,11 +2,11 @@
 
 namespace App\Controller\Api;
 
-use App\Entity\Money;
-use App\Entity\MoneyCategory;
-use App\Entity\MoneyDetails;
-use App\Entity\MoneyType;
-use App\Entity\User;
+use App\Document\Money;
+use App\Document\MoneyCategory;
+use App\Document\MoneyDetails;
+use App\Document\MoneyType;
+use App\Document\User;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -190,8 +190,8 @@ class MoneyController extends Controller {
 
     public function moneyStat(Request $request) {
 
-        $repositoryUser = $this->getDoctrine()->getRepository(User::class);
-        $repositoryMoney = $this->getDoctrine()->getRepository(Money::class);
+        $repositoryUser = $this->get('doctrine_mongodb')->getRepository(User::class);
+        $repositoryMoney = $this->get('doctrine_mongodb')->getRepository(Money::class);
 
         $auth = $request->headers->get('authorization');
         $token = str_replace("Bearer ","",$auth);

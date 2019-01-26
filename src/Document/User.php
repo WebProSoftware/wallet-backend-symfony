@@ -46,7 +46,7 @@ class User {
     /**
      * @MongoDB\Field(type="boolean")
      */
-    protected $blocked = false;
+    protected $blocked;
 
     /**
      * @MongoDB\Field(type="date", nullable=true)
@@ -59,19 +59,19 @@ class User {
     protected $token;
 
     /**
-     * @MongoDB\@ReferenceOne(targetDocument="UserAddress")
+     * @MongoDB\ReferenceOne(targetDocument="UserAddress", cascade={"persist", "remove"})
      */
-    protected $UserAdress;
+    private $UserAdress;
 
     /**
-     * @MongoDB\@ReferenceOne(targetDocument="UserDetails")
+     * @MongoDB\ReferenceOne(targetDocument="UserDetails", cascade={"persist", "remove"})
      */
-    protected $UserDetails;
+    private $UserDetails;
 
     /**
-     * @MongoDB\@ReferenceMany(targetDocument="Account")
+     * @MongoDB\ReferenceMany(targetDocument="Money", mappedBy="user")
      */
-    protected $monies = array();
+    private $monies = array();
 
     /**
      * @return mixed
@@ -283,6 +283,7 @@ class User {
 
     public function __construct()
     {
+        $this->blocked = false;
         $this->monies = new ArrayCollection();
     }
 

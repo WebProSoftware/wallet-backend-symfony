@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Document\User;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Symfony\Component\BrowserKit\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -27,8 +26,6 @@ class DefaultController extends Controller
     public function mongoTest() {
         $user = new User();
         $user->setEmail("admin@admim.com");
-        $user->setFirstname("Matt");
-        $user->setLastname("Matt");
         $user->setPassword(md5("123456"));
 
         $dm = $this->get('doctrine_mongodb')->getManager();
